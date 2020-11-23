@@ -50,7 +50,7 @@ object SimpleSearch extends App{
       scala.io.StdIn.readLine.trim
     }
     // Every time a user input is required, step once through this internal function 
-    def cli_step(user_input: String): Unit = {
+    def cli_step(): Unit = {
       get_user_input() match {
         case "exit" => return 
         case "" => println("Please enter one or more search terms. Enter \"exit\" to exit.")
@@ -133,6 +133,18 @@ class Index(indexable_items: Array[_ <: Indexable]){
   }
 
   /**
+   * Used by `search`. Returns the raw results, not as a pretty string.
+   * See `search` for more information.
+   */
+  def search_raw(searchwords: Array[String]): Array[(String, Integer)] = {
+    val tokenized_words = searchwords.map(tokenize(_))
+
+    files.map(
+      file =>
+        (file, file_score(file, tokenized_words)))
+  }
+
+  /**
    * Use the index to score each file based on the user given words
    *
    * 1. Tokenize the words
@@ -141,13 +153,6 @@ class Index(indexable_items: Array[_ <: Indexable]){
    * 4. Create a string representation of the top 10
    */
   def search(args: Array[String]): String = {
-    def search_raw(searchwords: Array[String]): Array[(String, Integer)] = {
-      val tokenized_words = searchwords.map(tokenize(_))
-
-      files.map(
-        file =>
-          (file, file_score(file, tokenized_words)))
-    }
 
     search_raw(args)
       .sortWith(_._2 > _._2)

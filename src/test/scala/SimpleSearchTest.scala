@@ -14,12 +14,13 @@ class IndexTest extends FunSuite {
     new IndexableTestItem("file2.txt", "How long have we been watching this movie Steve? Are we close to the end."))
 
   val test_index = new Index(test_items)
+
   test("Index.index") {
     // The index should show that "steve" is present in both files
     assert(test_index.index("steve") == HashSet("file1.txt", "file2.txt"))
     // The index should give the files the expected score
     assert(
-      test_index.search(Array("steve", "we")).toSet == Array(("file1.txt", 50), ("file2.txt", 100)).toSet)
+      test_index.search_raw(Array("steve", "we")).toSet == Array(("file1.txt", 50), ("file2.txt", 100)).toSet)
   }
 
   test("Index.tokenize") {
@@ -35,5 +36,13 @@ class IndexTest extends FunSuite {
     assert(0 == test_index.file_score("file1.txt", Array("bob")))
     // 25% score since one of the names are present
     assert(25 == test_index.file_score("file1.txt", Array("steve", "bob", "alice", "john")))
+  }
+
+  // Don't crash if we try to read an empty file
+  test("Index.EmptyFile"){
+    val empty_file = new IndexableTestItem("empty.txt", "")
+    val index = new Index(Array(empty_file))
+
+    assert(0 == index.file_score("empty.txt", Array("bob")))
   }
 }
